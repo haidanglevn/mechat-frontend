@@ -1,8 +1,19 @@
-# React + Vite
+# MeChat Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the front-end client of chat app called MeChat, a real-time chat application built with React and DotNet Core. 
 
-Currently, two official plugins are available:
+![mechat-frontend-demo](https://github.com/haidanglevn/mechat-frontend/assets/24937536/c4ed0fc5-7f96-4f5f-86f1-040726691a9c)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Backlogs
+
+- [ ] SignalR notification
+- [ ] Responsive design
+- [ ] Support media sending
+- [ ] Encryption for message
+
+## Ready
+
+- [x] Sending messages
+- [x] Create group messages
+- [x] Sign-up for new user
+- [x] User authentication
