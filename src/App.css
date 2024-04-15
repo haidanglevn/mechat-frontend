@@ -1,0 +1,20 @@
+.chat-app {
+  display: flex;
+  height: 100vh;
+  background-color: #242424;
+  color: white;
+}
+
+/* side bar -------------------------------------------------------- */
+.side-bar {
+  width: 7em;
+  justify-content: space-between;
+  padding: 2em;
+}
+
+.side-bar div {
+  align-items: center;
+  text-align: center;
+}
+
+/* chat window -------------------------------------------------------- */

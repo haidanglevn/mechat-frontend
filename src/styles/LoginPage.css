@@ -1,0 +1,9 @@
+.login-page {
+  flex-grow: 3;
+  background-color: white;
+  color: black;
+  margin: 5px;
+  padding: 20px;
+  border-radius: 20px;
+  width: 40em;
+}

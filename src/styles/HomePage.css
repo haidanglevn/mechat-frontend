@@ -1,0 +1,57 @@
+.chat-window {
+  flex-grow: 3;
+  background-color: white;
+  color: black;
+  margin: 5px;
+  padding: 20px;
+  border-radius: 20px;
+  width: 40em;
+}
+
+.chat-list {
+  flex-grow: 1;
+  min-width: 350px;
+}
+
+.chat-conversation {
+  flex-grow: 15;
+
+  /* border: 1px solid green; */
+}
+
+.chat-conversation-header {
+  flex-grow: 0.5;
+  /* border: 1px solid green; */
+}
+.chat-conversation-body {
+  flex-grow: 15;
+  max-height: 700px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+.chat-conversation-input {
+  flex-grow: 1;
+  /* border: 1px solid green; */
+}
+
+/* group info -------------------------------------------------------- */
+
+.group-info {
+  flex-grow: 1;
+  border: 1px solid yellow;
+  background-color: white;
+  color: black;
+  margin: 5px;
+  padding: 20px;
+  border-radius: 20px;
+  max-width: 300px;
+}
+
+.accordion-img {
+  width: 100px;
+  height: 100px;
+}
+
+.accordion-header {
+  padding-left: 20px;
+}
