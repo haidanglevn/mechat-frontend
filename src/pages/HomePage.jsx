@@ -17,16 +17,23 @@ import axios from "axios";
 import MessageThubnail from "../components/MessageThubnail";
 
 import "../styles/HomePage.css";
+import useAuthStore from "../stores/authStore";
+import useChatStore from "../stores/chatStore";
 
 const HomePage = () => {
-  const [conversation, setConversation] = useState([]);
-  const [selectedCons, setSelectedCons] = useState(null);
   const [showInfo, setShowInfo] = useState(false);
   const [messageSent, setMessageSent] = useState(false);
+  const { user } = useAuthStore();
+  const {
+    selectedCons,
+    setSelectedCons,
+    fetchMessageThumbnail,
+    conversations,
+  } = useChatStore();
 
   useEffect(() => {
-    fetchMessageThumbnail();
-  }, []);
+    fetchMessageThumbnail(user);
+  }, [user]);
 
   useEffect(() => {
     if (messageSent) {
@@ -39,16 +46,6 @@ const HomePage = () => {
     setMessageSent(true);
   };
 
-  const fetchMessageThumbnail = () => {
-    axios
-      .get(
-        "https://localhost:7170/api/conversations/get-all-conversation/ad0ad1be-f7e5-47c7-b4c3-c17250cbebab"
-      )
-      .then((res) => {
-        console.log(res.data);
-        setConversation(res.data);
-      });
-  };
   return (
     <>
       <Stack className="chat-window" direction={"row"} gap={"20px"}>
@@ -75,7 +72,7 @@ const HomePage = () => {
             }}
           />
 
-          {conversation.map((cons) => {
+          {conversations.map((cons) => {
             return (
               <MessageThubnail
                 cons={cons}
@@ -116,7 +113,7 @@ const HomePage = () => {
           </Stack>
 
           <Stack className="chat-conversation-body">
-            <ChatBox selectedCons={selectedCons} onMessageSent={messageSent} />
+            <ChatBox />
           </Stack>
 
           <Stack

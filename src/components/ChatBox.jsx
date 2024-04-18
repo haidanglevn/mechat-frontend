@@ -2,10 +2,53 @@ import { React, useEffect, useRef, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import axios from "axios";
 import ChatMessage from "./ChatMessage";
+import { HubConnectionBuilder } from "@microsoft/signalr";
+import useChatStore from "../stores/chatStore";
 
-const ChatBox = ({ selectedCons, onMessageSent }) => {
+const ChatBox = () => {
   const messagesEndRef = useRef(null);
   const [messages, setMessages] = useState([]);
+  const { selectedCons } = useChatStore();
+
+  // Connect to hub -------------------------------------------------
+  const [connection, setConnection] = useState(null);
+
+  useEffect(() => {
+    // Create and start the connection
+    const connect = new HubConnectionBuilder()
+      .withUrl("https://localhost:7170/testhub") // Adjust the URL to where your hub is hosted
+      .withAutomaticReconnect()
+      .build();
+
+    connect
+      .start()
+      .then(() => {
+        console.log("Connected!");
+        setConnection(connect);
+      })
+      .catch((err) =>
+        console.error("Error while establishing connection:", err)
+      );
+
+    // Handle receiving messages
+    connect.on(
+      "ReceiveMessageInConversation",
+      (user, message, conversationId) => {
+        console.log(
+          `Message from ${user} in conversation ${conversationId}: ${message}`
+        );
+        fetchMessages();
+        // You can update the UI to show this message in the appropriate conversation view
+      }
+    );
+
+    // Clean up on unmount
+    return () => {
+      connect.stop().then(() => console.log("Disconnected from SignalR hub."));
+    };
+  }, []);
+
+  // End of signalR hub ---------------------------------------------
 
   function formatDate(dateString) {
     const date = new Date(dateString);
@@ -37,7 +80,7 @@ const ChatBox = ({ selectedCons, onMessageSent }) => {
 
   useEffect(() => {
     fetchMessages();
-  }, [selectedCons, onMessageSent]);
+  }, [selectedCons]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -70,6 +113,7 @@ const ChatBox = ({ selectedCons, onMessageSent }) => {
               message={mes.content}
               time={formatDate(mes.createdAt)}
               senderId={mes.senderId}
+              key={mes.id}
             />
           );
         });

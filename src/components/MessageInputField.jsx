@@ -6,9 +6,11 @@ import MicNoneIcon from "@mui/icons-material/MicNone";
 import SendIcon from "@mui/icons-material/Send";
 import PaperClipIcon from "@mui/icons-material/AttachFile"; // Assuming this is the paper clip icon
 import axios from "axios";
+import useAuthStore from "../stores/authStore";
 
 const MessageInputField = ({ cons, onMessageSent }) => {
   const [message, setMessage] = useState("");
+  const { user } = useAuthStore();
 
   useEffect(() => {
     setMessage(""); // reset the input field
@@ -21,7 +23,7 @@ const MessageInputField = ({ cons, onMessageSent }) => {
     }
     const url = "https://localhost:7170/api/messages/send-message";
     const data = {
-      SenderId: "ad0ad1be-f7e5-47c7-b4c3-c17250cbebab",
+      SenderId: user.userId,
       ConversationId: cons.id,
       Content: message,
     };

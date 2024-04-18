@@ -3,9 +3,12 @@ import { Avatar, Box, Paper, Typography, IconButton } from "@mui/material";
 import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import axios from "axios";
+import useAuthStore from "../stores/authStore";
 
 const ChatMessage = ({ message, time, senderId }) => {
-  const userId = "ad0ad1be-f7e5-47c7-b4c3-c17250cbebab";
+  const { user } = useAuthStore();
+
+  const userId = user.userId;
   return (
     <Box
       sx={{
