@@ -5,6 +5,7 @@ const useChatStore = create((set, get) => ({
   messages: [],
   conversations: [],
   selectedCons: null,
+  isTyping: false,
 
   // Set selected conversation
   setSelectedCons: (conversation) => set({ selectedCons: conversation }),
@@ -29,7 +30,6 @@ const useChatStore = create((set, get) => ({
           `https://localhost:7170/api/conversations/get-all-conversation/${user.userId}`
         )
         .then((res) => {
-          console.log(res.data);
           set({ conversations: res.data });
         })
         .catch((err) => console.error("Failed to fetch conversations:", err));
@@ -40,6 +40,8 @@ const useChatStore = create((set, get) => ({
 
   // Reset messages (optional, but can be useful)
   clearMessages: () => set({ messages: [] }),
+  setItTypingTrue: () => set({ isTyping: true }),
+  setItTypingFalse: () => set({ isTyping: false }),
 }));
 
 export default useChatStore;

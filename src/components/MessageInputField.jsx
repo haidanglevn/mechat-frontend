@@ -7,17 +7,34 @@ import SendIcon from "@mui/icons-material/Send";
 import PaperClipIcon from "@mui/icons-material/AttachFile"; // Assuming this is the paper clip icon
 import axios from "axios";
 import useAuthStore from "../stores/authStore";
+import debounce from "lodash.debounce";
+import useChatStore from "../stores/chatStore";
 
-const MessageInputField = ({ cons, onMessageSent }) => {
-  const [message, setMessage] = useState("");
+const MessageInputField = ({ cons, onMessageSent, onTyping, onStopTyping }) => {
+  const [messageInput, setMessageInput] = useState("");
   const { user } = useAuthStore();
+  const { selectedCons } = useChatStore();
+  let sendTypingIndicator = useRef(debounce(onStopTyping, 10000)).current; // auto stop typing if user doesn't type for 10 secs
 
   useEffect(() => {
-    setMessage(""); // reset the input field
+    setMessageInput(""); // reset the input field
   }, [cons]);
 
+  const handleInputChange = (e) => {
+    const newValue = e.target.value;
+    setMessageInput(newValue);
+    if (newValue.trim() !== "" && newValue.length > 0) {
+      onTyping();
+      sendTypingIndicator();
+    } else {
+      // If input is cleared, stop typing immediately
+      onStopTyping();
+      sendTypingIndicator.cancel(); // Cancel any pending debounced calls
+    }
+  };
+
   const sendMessage = async () => {
-    if (message.trim("") === "") {
+    if (messageInput.trim("") === "") {
       console.log("No message to send");
       return; // Avoid sending empty messages
     }
@@ -25,13 +42,14 @@ const MessageInputField = ({ cons, onMessageSent }) => {
     const data = {
       SenderId: user.userId,
       ConversationId: cons.id,
-      Content: message,
+      Content: messageInput,
     };
 
     try {
       await axios.post(url, data);
       console.log("Message sent successfully");
-      setMessage("");
+      setMessageInput("");
+      onStopTyping();
       onMessageSent();
     } catch (error) {
       console.error("Error sending message:", error);
@@ -41,9 +59,9 @@ const MessageInputField = ({ cons, onMessageSent }) => {
   return (
     <TextField
       fullWidth
-      onChange={(e) => setMessage(e.target.value)}
+      onChange={(e) => handleInputChange(e)}
       placeholder="Your message"
-      value={message}
+      value={messageInput}
       variant="outlined"
       InputProps={{
         startAdornment: (
@@ -56,9 +74,12 @@ const MessageInputField = ({ cons, onMessageSent }) => {
             <IconButton>
               <MicNoneIcon color="disabled" />
             </IconButton>
-            <IconButton onClick={sendMessage} disabled={message.trim() === ""}>
+            <IconButton
+              onClick={sendMessage}
+              disabled={messageInput.trim() === ""}
+            >
               <SendIcon
-                color={message.trim() === "" ? "disabled" : "primary"}
+                color={messageInput.trim() === "" ? "disabled" : "primary"}
               />
             </IconButton>
           </InputAdornment>

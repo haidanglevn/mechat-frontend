@@ -15,23 +15,17 @@
 
 .chat-conversation {
   flex-grow: 15;
-
-  /* border: 1px solid green; */
 }
 
 .chat-conversation-header {
   flex-grow: 0.5;
-  /* border: 1px solid green; */
 }
 .chat-conversation-body {
   flex-grow: 15;
-  max-height: 700px;
-  overflow-y: scroll;
   overflow-x: hidden;
 }
 .chat-conversation-input {
   flex-grow: 1;
-  /* border: 1px solid green; */
 }
 
 /* group info -------------------------------------------------------- */

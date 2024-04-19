@@ -19,6 +19,7 @@ import MessageThubnail from "../components/MessageThubnail";
 import "../styles/HomePage.css";
 import useAuthStore from "../stores/authStore";
 import useChatStore from "../stores/chatStore";
+import { HubConnectionBuilder } from "@microsoft/signalr";
 
 const HomePage = () => {
   const [showInfo, setShowInfo] = useState(false);
@@ -26,10 +27,98 @@ const HomePage = () => {
   const { user } = useAuthStore();
   const {
     selectedCons,
-    setSelectedCons,
     fetchMessageThumbnail,
-    conversations,
+    fetchMessages,
+    setItTypingTrue,
+    setItTypingFalse,
   } = useChatStore();
+
+  // Connect to hub -------------------------------------------------
+  const [connection, setConnection] = useState(null);
+
+  useEffect(() => {
+    // Create and start the connection
+    const connect = new HubConnectionBuilder()
+      .withUrl("https://localhost:7170/testhub") // Adjust the URL to where your hub is hosted
+      .withAutomaticReconnect()
+      .build();
+
+    connect
+      .start()
+      .then(() => {
+        console.log("Connected!");
+        setConnection(connect);
+      })
+      .catch((err) =>
+        console.error("Error while establishing connection:", err)
+      );
+
+    // Handle receiving messages
+    connect.on(
+      "ReceiveMessageInConversation",
+      (user, message, conversation) => {
+        console.log(
+          `Message from ${user} in conversation ${conversation}: ${message}`
+        );
+        fetchMessages();
+      }
+    );
+
+    connect.on("Typing", (username, conversationId) => {
+      setItTypingTrue();
+      // console.log(`User ${username} is typing.....`);
+    });
+    connect.on("StopTyping", (username, conversationId) => {
+      setItTypingFalse();
+      // console.log(`User ${username} stopped typing.....`);
+    });
+
+    // Clean up on unmount
+    return () => {
+      connect.stop().then(() => console.log("Disconnected from SignalR hub."));
+    };
+  }, []);
+
+  // Join and Leave conversation when selectedCons changes
+  useEffect(() => {
+    if (connection) {
+      const joinConversation = async (conversationId) => {
+        await connection.invoke("JoinConversation", conversationId);
+        // .then(() => console.log(`Joined conversation ${conversationId}`))
+        // .catch((err) => console.error("Failed to send typing event:", err));
+      };
+
+      const leaveConversation = async (conversationId) => {
+        await connection.invoke("LeaveConversation", conversationId);
+        // console.log(`Left conversation ${conversationId}`);
+      };
+
+      if (selectedCons) {
+        joinConversation(selectedCons.id);
+      }
+
+      // Cleanup function to leave the conversation when the selectedCons changes or component unmounts
+      return () => {
+        if (selectedCons) {
+          leaveConversation(selectedCons.id);
+        }
+      };
+    }
+  }, [selectedCons, connection]);
+
+  const handleTyping = (conversation) => {
+    if (connection && conversation) {
+      connection.invoke("Typing", user.name, conversation);
+    }
+  };
+
+  const handleStopTyping = (conversation) => {
+    if (connection && conversation) {
+      connection.invoke("StopTyping", user.name, conversation);
+    }
+  };
+
+  // End of signalR hub ---------------------------------------------
 
   useEffect(() => {
     fetchMessageThumbnail(user);
@@ -37,7 +126,8 @@ const HomePage = () => {
 
   useEffect(() => {
     if (messageSent) {
-      fetchMessageThumbnail();
+      fetchMessageThumbnail(user);
+      fetchMessages();
       setMessageSent(false);
     }
   }, [messageSent]);
@@ -72,15 +162,7 @@ const HomePage = () => {
             }}
           />
 
-          {conversations.map((cons) => {
-            return (
-              <MessageThubnail
-                cons={cons}
-                key={cons.id}
-                onClick={() => setSelectedCons(cons)}
-              />
-            );
-          })}
+          <MessageThubnail />
         </Stack>
 
         <Stack className="chat-conversation">
@@ -93,7 +175,10 @@ const HomePage = () => {
             {selectedCons !== null && (
               <>
                 <Stack>
-                  <Typography variant="h4">{selectedCons.title}</Typography>
+                  <Typography variant="h4">
+                    {selectedCons.title} - (
+                    {selectedCons.id.toString().slice(0, 10)}....)
+                  </Typography>
                   <Typography variant="caption" sx={{ paddingLeft: "5px" }}>
                     23 members, 10 online
                   </Typography>
@@ -114,17 +199,20 @@ const HomePage = () => {
 
           <Stack className="chat-conversation-body">
             <ChatBox />
-          </Stack>
-
-          <Stack
-            className="chat-conversation-input"
-            justifyContent={"flex-end"}
-            height={"30px"}
-          >
-            <MessageInputField
-              cons={selectedCons}
-              onMessageSent={handleMessageSent}
-            />
+            {selectedCons && (
+              <Stack
+                className="chat-conversation-input"
+                justifyContent={"flex-end"}
+                height={"30px"}
+              >
+                <MessageInputField
+                  cons={selectedCons}
+                  onMessageSent={handleMessageSent}
+                  onTyping={() => handleTyping(selectedCons.id)}
+                  onStopTyping={() => handleStopTyping(selectedCons.id)}
+                />
+              </Stack>
+            )}
           </Stack>
         </Stack>
       </Stack>
